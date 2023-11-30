@@ -63,3 +63,4 @@ C:\Users\flatr\source\TelegramBot\TelegramBot\obj\Debug\net8.0\TelegramBot.pdb
 C:\Users\flatr\source\TelegramBot\TelegramBot\obj\Debug\net8.0\TelegramBot.genruntimeconfig.cache
 C:\Users\flatr\source\TelegramBot\TelegramBot\obj\Debug\net8.0\ref\TelegramBot.dll
 C:\Users\flatr\source\TelegramBot\TelegramBot\bin\Debug\net8.0\yoomoney-api.dll
+C:\Users\flatr\source\TelegramBot\TelegramBot\obj\Debug\net8.0\TelegramBot.sourcelink.json
