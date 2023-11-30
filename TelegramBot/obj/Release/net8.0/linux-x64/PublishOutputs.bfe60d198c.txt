@@ -1,0 +1,3 @@
+C:\Users\flatr\source\TelegramBot\bin\Release\linux-x64\TelegramBot.pdb
+C:\Users\flatr\source\TelegramBot\bin\Release\linux-x64\SQLite.Interop.dll
+C:\Users\flatr\source\TelegramBot\bin\Release\linux-x64\TelegramBot
