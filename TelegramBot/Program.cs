@@ -510,6 +510,7 @@ namespace Telegram_Bot
                         SQL.RegistrateUser(chat.Id.ToString(), GetUserData(chat.Id)._username, GetUserData(chat.Id)._phone, GetUserData(chat.Id)._email);
                         GetUserData(chat.Id)._regestrationState = RegestrationState.empty;
                         GetUserData(chat.Id)._isPaymentInsturction = true;
+                        return;
                     }
                     else
                     {
@@ -1017,7 +1018,7 @@ namespace Telegram_Bot
                             {
                                 new KeyboardButton[]
                                 {
-                                    new KeyboardButton("Верно"),
+                                    new KeyboardButton("Да, все верно"),
                                     new KeyboardButton("Не верно"),
                                 },
                                 new KeyboardButton[]
@@ -1045,7 +1046,7 @@ namespace Telegram_Bot
             var message = update.Message;
             var chat = update.Message.Chat;
 
-            if (message.Text == "Верно")
+            if (message.Text == "Да, все верно")
             {
                 GetUserData(chat.Id)._games = SQL.GetGames();
 
