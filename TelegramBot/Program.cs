@@ -29,7 +29,7 @@ namespace Telegram_Bot
 
         private static ReceiverOptions _receiverOptions;
 
-        private static string _imagesPath = @"\Images\";
+        private static string _imagesPath = @"/Images/";
 
         #region Dictionary
         private static Dictionary<GameDateTime, string> _dateTimeNames = new Dictionary<GameDateTime, string>()
