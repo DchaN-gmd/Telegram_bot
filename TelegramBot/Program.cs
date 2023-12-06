@@ -9,14 +9,19 @@ using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.Payments;
 using Telegram.Bot.Types.ReplyMarkups;
+using Yandex.Checkout.V3;
 using File = System.IO.File;
+using CodePackage.YooKassa;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using yoomoney_api;
 
 namespace Telegram_Bot
 {
     class Program
     {
         private static string _token { get; set; } = "6487643126:AAGMs9_bJqAG91QPwJbp-r7PG5qBsJSsk-I";
-        private static string _paymentToken = "381764678:TEST:71834";
+        private static string _paymentToken = "390540012:LIVE:43499";
         private static TelegramBotClient _client;
         private static List<Admin> _admins = new();
 
@@ -158,7 +163,6 @@ namespace Telegram_Bot
             if (preCheckout != null)
             {
                 await botClient.AnswerPreCheckoutQueryAsync(update.PreCheckoutQuery.Id, cancellationToken);
-                Console.WriteLine(update.PreCheckoutQuery.From.Id);
                 GetUserData(update.PreCheckoutQuery.From.Id)._isPreCheckout = true;
             }
         }
@@ -170,7 +174,7 @@ namespace Telegram_Bot
             if (GetUserData(chat.Id)._gameToBuy != null && message.Text == "Установил игру 🎉")
             {
                 await botClient.SendTextMessageAsync(chat.Id,
-                    "Отлично, перейдем к активации игры! 🎮\r\n\r\nИгру необходимо активировать всего один раз, при первом запуске.\r\n\r\n1. Запустите игру 🚀\r\n2. На экране вы увидите две строки 📊\r\n3. Верхняя строка \"персональный код\" содержит ваш уникальный код 🔑\r\n4. Скопируйте его 📋\r\n5. Отправьте его в чат 📤\r\n6. Как только вы его отправите, через несколько минут вам придет сообщение с ключом 🗝️\r\n7. Копируете ключ из сообщения 📋\r\n8. Открываете игру 🎮\r\n9. Вставляете ключ в поле \"лицензия\", который вы скопировали из чата 🎫\r\n10. Нажимаете на кнопку \"ИГРАТЬ\" ▶️\r\n11. Игра будет активирована, и вы можете наслаждаться приключениями! 🌟");
+                    "Отлично, перейдем к активации игры! 🎮\r\n\r\nИгру необходимо активировать всего один раз, при первом запуске.\r\n\r\n1. Запустите игру 🚀\r\n2. На экране вы увидите две строки 📊\r\n3. Верхняя строка \"персональный код\" содержит ваш уникальный код 🔑\r\n4. Скопируйте его 📋\r\n5. Отправьте его в чат 📤\r\n6. Как только вы его отправите, через несколько минут вам придет сообщение с ключом 🗝️\r\n7. Копируете ключ из сообщения 📋\r\n8. Открываете игру 🎮\r\n9. Вставляете ключ в поле \"лицензия\", который вы скопировали из чата 🎫\r\n10. Нажимаете на кнопку \"ИГРАТЬ\" ▶️\r\n11. Игра будет активирована, и вы можете наслаждаться приключениями! 🌟 \n\n Сейчас отправте в сообщении мне код!");
                 GetUserData(chat.Id)._isGenerateLicense = true;
                 GetUserData(chat.Id)._isInput = true;
             }
@@ -276,6 +280,12 @@ namespace Telegram_Bot
                     await botClient.SendTextMessageAsync(chat.Id, SQL.GetSetupLink(GetUserData(chat.Id)._gameToBuy.Name), replyMarkup: replyKeyboard);
 
                 }
+                else
+                {
+                    await botClient.SendTextMessageAsync(chat.Id,
+                        "Оплата, к сожалению не прошла", replyMarkup: _backKeyboardMarkup);
+                    GetUserData(chat.Id)._isPreCheckout = false;
+                }
             }
         }
 
@@ -315,13 +325,13 @@ namespace Telegram_Bot
                         if(message.Text != "/testStart") return;
                     }
 
-                    await botClient.SendTextMessageAsync(chat.Id, "Продолжая переписку вы даёте согласие на обработку ваших персональных данных и получение информационной рассылки.С Политикой обработки персональных данных можно ознакомиться здесь:ссылка на сайт с политикой обработки данных",
+                    await botClient.SendTextMessageAsync(chat.Id, "Продолжая переписку вы даёте согласие на обработку ваших персональных данных и получение информационной рассылки.С Политикой обработки персональных данных можно ознакомиться здесь: \nhttp://gamelab.fun/personal",
                          cancellationToken: cancellationToken);
 
                     Task.Delay(1000);
 
                     await botClient.SendTextMessageAsync(chat.Id,
-                        "Привет! 🎉 Рад приветствовать тебя в Лаборатории интерактивных игр! 😊 Я - Никита, твой гид в мире веселья и приключений. Здесь мы создаем игры для всех видов интерактивного оборудования. 🎮 Ты можешь у нас не только заказать уникальную игру, но и приобрести уже готовые варианты! 🕹️",
+                        "Привет! 🎉 Рад приветствовать тебя в Лаборатории интерактивных игр! 😊 Я - Влад, твой гид в мире веселья и приключений. Здесь мы создаем игры для всех видов интерактивного оборудования. 🎮 Ты можешь у нас не только заказать уникальную игру, но и приобрести уже готовые варианты! 🕹️",
                          cancellationToken: cancellationToken);
 
                     Task.Delay(1000);
@@ -369,7 +379,16 @@ namespace Telegram_Bot
                 var game = GetUserData(chat.Id)._games.FirstOrDefault((x) => x.Name == message.Text);
 
                 if (message.Text == "Хочу посмотреть другие наборы! 🌐🎲" && GetUserData(chat.Id)._gamePack != null) game = GetUserData(chat.Id)._gamePack;
-                
+
+                if (message.Text == "Скачать демо-версию" && GetUserData(chat.Id)._gameToBuy != null)
+                {
+                    await botClient.SendTextMessageAsync(chat.Id, $"Отлично! 🌟 Сейчас я отправлю тебе инструкцию по запуску демо-версии игры. Следуй указаниям и наслаждайся пробной версией! 🚀🎮", cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(chat.Id, $"Отлично! 🌟 Теперь я расскажу, как скачать демо-версию игры:\r\n\r\n1. В следующем сообщении вы получите ссылку на архив. 📦\r\n2. Перейдите по ссылке. 🌐\r\n3. Нажмите 'Скачать'. 📥\r\n4. Откройте архив (для этого у вас должна быть установлена программа WinRAR или 7zip). \U0001f9f7\r\n5. Распакуйте архив в удобное место на вашем компьютере. 📂\r\n6. После распаковки появится папка. 📁\r\n7. Откройте ее. 📂\r\n8. В открывшемся окне запустите файл '{GetUserData(chat.Id)._gameToBuy.Name}.exe'. ⚙️\r\n\r\nПомните, что демо-версия предназначена для ознакомления и имеет некоторые ограничения. Наслаждайтесь игрой! 🎮🚀", cancellationToken: cancellationToken);
+                    await botClient.SendTextMessageAsync(chat.Id, $"Вот ссылка на демо-версию игры: \n{SQL.GetGameDemoLink(GetUserData(chat.Id)._gameToBuy.Name)}",
+                        replyMarkup: _backKeyboardMarkup, cancellationToken: cancellationToken);
+                    return;
+                }
+
                 if (game != null)
                 {
                     if (game.IsPack)
@@ -399,6 +418,10 @@ namespace Telegram_Bot
                     selectGameKeyboardList.Add(new KeyboardButton[]
                     {
                         new KeyboardButton("Купить 🛒"),
+                    });
+                    selectGameKeyboardList.Add(new KeyboardButton[]
+                    {
+                        new KeyboardButton("Скачать демо-версию"),
                     });
                     selectGameKeyboardList.Add(new KeyboardButton[]
                     {
@@ -451,7 +474,7 @@ namespace Telegram_Bot
                     ResizeKeyboard = true,
                 };
 
-                await botClient.SendTextMessageAsync(chat.Id, "Пожалуйста, ознакомтесь с политикой конфиденциальности и пользовательским соглашением на обработку персональных данных",
+                await botClient.SendTextMessageAsync(chat.Id, "Пожалуйста, ознакомтесь с политикой конфиденциальности и пользовательским соглашением на обработку персональных данных: \nhttp://gamelab.fun/personal",
                     replyMarkup: replyKeyboard, cancellationToken: cancellationToken);
                 return;
             }
@@ -631,15 +654,21 @@ namespace Telegram_Bot
 
             if(GetUserData(chat.Id)._gameToBuy.DatePrice == null) return;
 
-            Console.WriteLine(chat.Id.ToString());
+            var str2 = $"{{\"receipt\": {{\"customer\": {{\"email\": \"{SQL.GetUserEmail(chat.Id.ToString())}\"}}, \"items\":[{{\"quantity\": 1.00,\"amount\": {{\"value\":\"{GetUserData(chat.Id)._gameToBuy.DatePrice.Amount}.00\", \"currency\": \"RUB\"}}, \"vat_code\": 1, \"tax\": 1, \"description\": \"{GetUserData(chat.Id)._gameToBuy.Name}\",\"paymentMethodType\": \"full_prepayment\",\"paymentSubjectType\": \"commodity\"}}]}}}}";
+
             await botClient.SendInvoiceAsync(chatId: update.Message.Chat.Id,
                 title: GetUserData(chat.Id)._gameToBuy.Name,
                 description: GetUserData(chat.Id)._gameToBuy.Desciption,
                 payload: "somePayload",
                 providerToken: _paymentToken,
                 currency: "RUB",
-                prices: new List<LabeledPrice>() { new LabeledPrice(GetUserData(chat.Id)._gameToBuy.Name, GetUserData(chat.Id)._gameToBuy.DatePrice.Amount * 100) },
-                isFlexible: false, startParameter: "start"
+                prices: new List<LabeledPrice>()
+                {
+                    new LabeledPrice(GetUserData(chat.Id)._gameToBuy.Name,
+                        GetUserData(chat.Id)._gameToBuy.DatePrice.Amount * 100)
+                },
+                isFlexible: false, startParameter: "start",
+                providerData: str2
             );
         }
 

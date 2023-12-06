@@ -172,19 +172,37 @@ internal static class SQL
         }
     }
 
-    public static string GetSetupLink(string GameName)
+    public static string GetSetupLink(string gameName)
     {
         using (var connection = new SQLiteConnection(CONNECTION_STRING))
         {
             connection.Open();
             var command = new SQLiteCommand();
             command.Connection = connection;
-            command.CommandText = $"SELECT * FROM Products WHERE GameName LIKE '{GameName}' OR PackName LIKE '{GameName}'";
+            command.CommandText = $"SELECT * FROM Products WHERE GameName LIKE '{gameName}' OR PackName LIKE '{gameName}'";
             var reader = command.ExecuteReader();
             string link = null;
             while (reader.Read())
             {
                 link = reader.GetString(1);
+            }
+            return link;
+        }
+    }
+
+    public static string GetGameDemoLink(string gameName)
+    {
+        using (var connection = new SQLiteConnection(CONNECTION_STRING))
+        {
+            connection.Open();
+            var command = new SQLiteCommand();
+            command.Connection = connection;
+            command.CommandText = $"SELECT * FROM Products WHERE GameName LIKE '{gameName}' OR PackName LIKE '{gameName}'";
+            var reader = command.ExecuteReader();
+            string link = null;
+            while (reader.Read())
+            {
+                link = reader.GetString(6);
             }
             return link;
         }
@@ -243,6 +261,25 @@ internal static class SQL
             }
 
             return games;
+        }
+    }
+
+    public static string GetUserEmail(string userId)
+    {
+        using (var connection = new SQLiteConnection(CONNECTION_STRING))
+        {
+            connection.Open();
+            var command = new SQLiteCommand();
+            command.Connection = connection;
+            command.CommandText = $"SELECT Email FROM Users WHERE User_ID LIKE '{userId}'";
+            var reader = command.ExecuteReader();
+            string userEmail = null;
+            while (reader.Read())
+            {
+                userEmail = reader.GetString(0);
+            }
+
+            return userEmail;
         }
     }
 
