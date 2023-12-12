@@ -109,7 +109,7 @@ namespace Telegram_Bot
 
                         if (!SQL.IsUserIDExist(chat.Id.ToString()))
                         {
-                            SQL.RegistrateUserID(chat.Id.ToString());
+                            SQL.RegistrateUserID(chat.Id.ToString(), update.Message.Chat.Username);
                         }
 
                         if (!GetUserData(chat.Id)._isBlockMenu)
@@ -843,7 +843,7 @@ namespace Telegram_Bot
                 {
                     new KeyboardButton[]
                     {
-                        new KeyboardButton("📱 WhatsApp, мне подойдет"),
+                        //new KeyboardButton("📱 WhatsApp, мне подойдет"),
                         new KeyboardButton("📬 Telegram, мне подходит"),
                     },
                     new KeyboardButton[]

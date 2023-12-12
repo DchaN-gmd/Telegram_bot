@@ -104,17 +104,18 @@ internal static class SQL
         }
     }
 
-    public static void RegistrateUserID(string userId)
+    public static void RegistrateUserID(string userId, string userPublicId)
     {
         using (var connection = new SQLiteConnection(CONNECTION_STRING))
         {
             connection.Open();
             var command = new SQLiteCommand();
             command.Connection = connection;
-            command.CommandText = $"insert into Users_ID (User_ID) values('{userId}')";
+            command.CommandText = $"insert into Users_ID (User_ID, UserPublic_ID) values('{userId}', '{userPublicId}')";
             command.ExecuteNonQuery();
         }
     }
+
 
     public static List<Game> GetGames()
     {
